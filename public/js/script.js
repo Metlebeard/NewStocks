@@ -429,8 +429,7 @@ function drawGraph(companyID)
 
         /*ctx.font = "15px Georgia";
         ctx.fillStyle = "#173F5F";*/
-        console.log(c.height);
-        ctx.fillText(text, (i/* *25*/) - 5, (c.height - company[5][i] / 3) - 10);
+        /*ctx.fillText(text, (i *25) - 5, (c.height - company[5][i] / 3) - 10);*/
     }
     ctx.font = "30px Georgia";
     ctx.fillStyle = "#173F5F";
