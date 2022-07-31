@@ -407,21 +407,19 @@ function drawGraph(companyID)
         if (company[5][i] > company[5][i-1])
         {
             ctx.strokeStyle = "#3CAEA3";
-            ctx.lineWidth = 5;
             text = "+" + (Number(company[5][i]) - Number(company[5][i-1]).toString());
         }
         else if (company[5][i] === company[5][i-1])
         {
             ctx.strokeStyle = "#F6D55C";
-            ctx.lineWidth = 5;
             text = "+0";
         }
         else
         {
             ctx.strokeStyle = "#ED553B";
-            ctx.lineWidth = 5;
             text = "-" + (Number(company[5][i-1]) - Number(company[5][i]).toString());
         }
+        ctx.lineWidth = 1 //5;
         ctx.beginPath();
 
         ctx.moveTo((i-1) /* *25*/ , c.height - company[5][i-1] / 3);
@@ -429,8 +427,8 @@ function drawGraph(companyID)
         ctx.stroke();
         
 
-        ctx.font = "15px Georgia";
-        ctx.fillStyle = "#173F5F";
+        /*ctx.font = "15px Georgia";
+        ctx.fillStyle = "#173F5F";*/
         console.log(c.height);
         ctx.fillText(text, (i/* *25*/) - 5, (c.height - company[5][i] / 3) - 10);
     }
