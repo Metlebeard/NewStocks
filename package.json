@@ -1,0 +1,27 @@
+{
+    "name": "digitalsolutionsgame",
+    "version": "1.0.0",
+    "description": "The educational game created for Digital Solutions",
+    "main": "index.js",
+    "scripts": {
+      "start": "node server/server.js"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Metlebeard/DigitalSolutionsGame.git"
+      
+    },
+    "engines": {
+      "node": "14.16.1"
+    },
+    "author": "Seth English",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/Metlebeard/DigitalSolutionsGame/issues"
+    },
+    "homepage": "https://github.com/Metlebeard/DigitalSolutionsGame#readme",
+    "dependencies": {
+      "express": "^4.17.1",
+      "socket.io": "^4.0.1"
+    }
+  }

@@ -1,0 +1,82 @@
+html {
+    font-family: sans-serif;
+    color: lightblue;
+    background-color: black;
+}
+
+div.container {
+    display: grid;
+}
+
+div.gameContainer {
+    display: grid;
+    grid-template-columns: 4fr 1fr;
+    grid-column-gap: 0px;
+    height: 500px;
+    background-color: #173F5F;
+}
+
+div.stockTab {
+    display: grid;
+    grid-template-columns: 1.5fr 3fr 1.5fr;
+    grid-column-gap: 0px;
+    height: 500px;
+}
+
+div.gameSettings {
+    background-color: #173F5F;
+}
+
+div.stockMarket {
+    background-color: #173F5F;
+    overflow: scroll;
+}
+
+button {
+    background-color: #20639B;
+    color: white;
+    border: black 1px solid;
+}
+
+button:hover {
+    background-color: #133b5c;
+}
+
+canvas {
+    background-color: #20639B;
+}
+
+div.graphContainer {
+    background-color: #173F5F;
+}
+
+div.optionsContainer {
+    background-color: #173F5F;
+}
+
+button.companyButton {
+    width: 100%;
+}
+
+button.ownedList {
+    display: inline-block;
+    width: 45%;
+    font-size: 13px;
+}
+
+div.ownedList {
+    height: 140px;
+    overflow: scroll;
+}
+
+div.leaderBoard {
+    height: 307px;
+    overflow: scroll;
+}
+
+nav.navBar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    overflow: hidden;
+}
