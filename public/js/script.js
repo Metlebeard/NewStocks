@@ -15,7 +15,7 @@ socket.on('connect', function() {
     console.log('Connected to server');
 });
 
-//log if disconnected from server
+//log if disconnected from server..
 socket.on('disconnect', function() {
     console.log('Disconnected from server');
 });
@@ -424,15 +424,15 @@ function drawGraph(companyID)
         }
         ctx.beginPath();
 
-        ctx.moveTo((i-1) * 25 , c.height - company[5][i-1] / 3);
-        ctx.lineTo(i*25, c.height - company[5][i] / 3);
+        ctx.moveTo((i-1) /* *25*/ , c.height - company[5][i-1] / 3);
+        ctx.lineTo(i/* *25*/, c.height - company[5][i] / 3);
         ctx.stroke();
         
 
         ctx.font = "15px Georgia";
         ctx.fillStyle = "#173F5F";
         console.log(c.height);
-        ctx.fillText(text, (i*25) - 5, (c.height - company[5][i] / 3) - 10);
+        ctx.fillText(text, (i/* *25*/) - 5, (c.height - company[5][i] / 3) - 10);
     }
     ctx.font = "30px Georgia";
     ctx.fillStyle = "#173F5F";

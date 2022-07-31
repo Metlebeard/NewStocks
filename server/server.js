@@ -189,7 +189,7 @@ function nextDay()
     checkNewCompany();
     earnDividends();
     updateStocks();
-    //ADD ALL OF THE DAYS CHANGES HERE
+    //ADD ALL OF THE DAYS CHANGES HERE.
     refreshStocks()
     io.emit("setDay", {
         day: day
@@ -250,10 +250,10 @@ function updateStocks()
             company[2]+= num;
             console.log(stocks[i][1] + " earnt $" + num);
             company[5].push(company[2]);
-            if (company[5].length > 20)
+            /*if (company[5].length > 20)
             {
                 company[5].splice(0, company[5].length-20);
-            }
+            }*/
         }
         else
         {
@@ -261,10 +261,10 @@ function updateStocks()
             company[5].push(company[2]);
             company[2]-= num;
             console.log(stocks[i][1] + " lost $" + num);
-            if (company[5].length > 20)
+            /*if (company[5].length > 20)
             {
                 company[5].splice(0, company[5].length-20);
-            }
+            }*/
             if (company[2] <= 0)
             {
                 console.log(stocks[i][1] + " has gone bankrupt");
