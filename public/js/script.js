@@ -422,8 +422,8 @@ function drawGraph(companyID)
         ctx.lineWidth = 1 //5;
         ctx.beginPath();
 
-        ctx.moveTo((i-1) /* *25*/ , c.height - company[5][i-1] / 3);
-        ctx.lineTo(i/* *25*/, c.height - company[5][i] / 3);
+        ctx.moveTo((i-1) *2 /* *25*/ , c.height - company[5][i-1] / 3);
+        ctx.lineTo(i*2/* *25*/, c.height - company[5][i] / 3);
         ctx.stroke();
         
 
