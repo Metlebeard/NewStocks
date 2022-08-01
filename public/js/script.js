@@ -419,11 +419,11 @@ function drawGraph(companyID)
             ctx.strokeStyle = "#ED553B";
             text = "-" + (Number(company[5][i-1]) - Number(company[5][i]).toString());
         }
-        ctx.lineWidth = 3 //5;
+        ctx.lineWidth = 2 //5;
         ctx.beginPath();
 
-        ctx.moveTo((i-1) /* *25*/ , c.height - company[5][i-1] / 2);
-        ctx.lineTo(i/* *25*/, c.height - company[5][i] / 2);
+        ctx.moveTo((i-1) *5/* *25*/ , c.height - company[5][i-1] / 2);
+        ctx.lineTo(i*5/* *25*/, c.height - company[5][i] / 2);
         ctx.stroke();
         
 
