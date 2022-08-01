@@ -252,7 +252,7 @@ function updateStocks()
             company[5].push(company[2]);
             if (company[5].length > 100)
             {
-                company[5].splice(0, company[5].length-20);
+                company[5].splice(0, company[5].length-100);
             }
         }
         else
@@ -263,7 +263,7 @@ function updateStocks()
             console.log(stocks[i][1] + " lost $" + num);
             if (company[5].length > 100)
             {
-                company[5].splice(0, company[5].length-20);
+                company[5].splice(0, company[5].length-100);
             }
             if (company[2] <= 0)
             {
