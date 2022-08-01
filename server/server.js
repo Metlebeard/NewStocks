@@ -185,6 +185,11 @@ function addStock(tag, value, shares, dividends, ceo)
 
 function nextDay()
 {
+    if (day == 500) 
+    {
+        resetGame();
+        return;
+    }
     updateLeaderboard();
     checkNewCompany();
     earnDividends();
@@ -236,7 +241,7 @@ function refreshStocks()
 }
 
 function randNum(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min)
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function updateStocks()
@@ -325,6 +330,7 @@ function resetGame()
 
 function checkNewCompany()
 {
+    if (stocks.length == 50) {return;}
     if (randNum(0, 1))
     {
         var consonant = ["B", "C", "D", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z"];
