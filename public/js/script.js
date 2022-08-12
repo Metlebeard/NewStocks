@@ -6,10 +6,17 @@ var money;
 var playerID;
 var selectedCompany = 0;
 
+var banks = [];
+var selectedBank;
+var bankMoney = 0;
+
 var leaderBoard = [];
+
+var playerName = "Player ?"
 
 loadBaseScreen();
 loadGameScreen();
+loadBankScreen();
 
 socket.on('connect', function() {
     console.log('Connected to server');
@@ -18,6 +25,12 @@ socket.on('connect', function() {
 //log if disconnected from server..
 socket.on('disconnect', function() {
     console.log('Disconnected from server');
+});
+
+socket.on('setBankDetails', function(data) {
+    banks = data.banks;
+    setBank(0);
+    openBank(0);
 });
 
 socket.on('initialReloadStocks', function(data) {
@@ -66,18 +79,27 @@ socket.on('reloadStocks', function(data) {
 
 socket.on('setClientMoney', function(data) {
     money = data.money;
-    balanceText = document.getElementById("balanceText");
-    balanceText.textContent = "Money: $" + money;
+    bankMoney = data.bankMoney;
+    document.getElementById("balanceText").textContent = "Money: $" + money;
+    document.getElementById("moneyTitle").textContent = "Money: $" + money;
+    document.getElementById("bankMoneyTitle").textContent = "Money: $" + bankMoney;
 });
 
 socket.on('setPlayerID', function(data) {
     playerID = data.id;
-    playerTitle = document.getElementById("playerTitle");
-    playerTitle.textContent = "You (Player " + playerID + ")";
+    playerName = "Player " + data.id; 
+    document.getElementById("playerTitle").textContent = "You (" + playerName + ")";
+    document.getElementById("bankPlayerTitle").textContent = "You (" + playerName + ")";
 });
 
 socket.on('setDay', function(data) {
     document.getElementById("dayCounter").textContent = "Day " + data.day;
+});
+
+socket.on('resetSelections', function() {
+    selectedBank = null;
+    setBank(0);
+    openCompany(0);
 });
 
 socket.on('updateOwnedShares', function(data) {
@@ -111,6 +133,19 @@ socket.on('updateOwnedShares', function(data) {
     });
 });
 
+socket.on('bankrupt', function(data) {
+    var company = getCompanyFromID(data.companyID);
+    if (selectedCompany == company[0])
+    {
+        openCompany(stocks[0][0]);
+    }
+});
+
+socket.on("setClientName", function(data) {
+    document.getElementById("playerTitle").textContent = "You (" + data.name + ")";
+    document.getElementById("bankPlayerTitle").textContent = "You (" + data.name + ")";
+});
+
 function loadBaseScreen()
 {
     //create container
@@ -132,14 +167,17 @@ function loadBaseScreen()
 
     var stockMarketButton = document.createElement("button");
     stockMarketButton.textContent = "Stock Market";
+    stockMarketButton.setAttribute("onClick", "switchTab(0)");
     navBar.appendChild(stockMarketButton);
 
     var bankButton = document.createElement("button");
     bankButton.textContent = "Bank";
+    bankButton.setAttribute("onClick", "switchTab(1)");
     navBar.appendChild(bankButton);
 
     var businessButton = document.createElement("button");
     businessButton.textContent = "Business";
+    businessButton.setAttribute("onClick", "switchTab(2)");
     navBar.appendChild(businessButton);
 
     //create gameContainer
@@ -171,13 +209,26 @@ function loadBaseScreen()
     gameSettings.appendChild(document.createElement("br"));
     gameSettings.appendChild(document.createElement("br"));
 
+    var nameInput = document.createElement("input");
+    nameInput.setAttribute("id", "nameInput");
+    nameInput.setAttribute("placeholder", "Enter name");
+    gameSettings.appendChild(nameInput);
+
+    var nameButton = document.createElement("button");
+    nameButton.textContent ="Set Name";
+    nameButton.setAttribute("onClick", "setName()");
+    gameSettings.appendChild(nameButton);
+
+    gameSettings.appendChild(document.createElement("br"));
+    gameSettings.appendChild(document.createElement("br"));
+
     var resetButton = document.createElement("button");
     resetButton.textContent ="Reset Game";
     resetButton.setAttribute("onClick", "resetGame()");
     gameSettings.appendChild(resetButton);
 
     var leaderBoardTitle = document.createElement("h2");
-    leaderBoardTitle.textContent = "Leaderboard"
+    leaderBoardTitle.textContent = "Leaderboard";
     gameSettings.appendChild(leaderBoardTitle);
 
     var leaderBoard = document.createElement("div");
@@ -259,7 +310,7 @@ function loadGameScreen()
     optionsContainer.appendChild(stockBuyButton);
 
     var playerTitle = document.createElement("h2");
-    playerTitle.textContent = "You (Player ????)";
+    playerTitle.textContent = "You (";
     playerTitle.setAttribute("id", "playerTitle");
     optionsContainer.appendChild(playerTitle);
 
@@ -279,6 +330,104 @@ function loadGameScreen()
 
     var gameSettings = document.getElementById("gameSettings");
     gameContainer.appendChild(gameSettings);
+}
+
+function loadBankScreen()
+{
+    var gameContainer = document.getElementById("gameContainer");
+
+    var bankTab = document.createElement("div");
+    bankTab.classList.add("bankTab");
+    bankTab.setAttribute("id", "bankTab");
+    gameContainer.appendChild(bankTab);
+
+    var spacerDiv = document.createElement("div");
+    spacerDiv.setAttribute("id", "spacerDiv");
+    gameContainer.appendChild(spacerDiv);
+
+    var banksContainer = document.createElement("div");
+    banksContainer.setAttribute("id", "banksContainer");
+    banksContainer.classList.add("banksContainer");
+    bankTab.appendChild(banksContainer);
+
+    var bankOneButton = document.createElement("button");
+    bankOneButton.textContent = "Bank of Sefftopia";
+    bankOneButton.setAttribute("onClick", "openBank(0)");
+    banksContainer.appendChild(bankOneButton);
+
+    var bankTwoButton = document.createElement("button");
+    bankTwoButton.textContent = "Seff Bank";
+    bankTwoButton.setAttribute("onClick", "openBank(1)");
+    banksContainer.appendChild(bankTwoButton);
+
+    var bankThreeButton = document.createElement("button");
+    bankThreeButton.textContent = "Bank of Banks";
+    bankThreeButton.setAttribute("onClick", "openBank(2)");
+    banksContainer.appendChild(bankThreeButton);
+
+    var bankFourButton = document.createElement("button");
+    bankFourButton.textContent = "Bank of the Wealthy";
+    bankFourButton.setAttribute("onClick", "openBank(3)");
+    banksContainer.appendChild(bankFourButton);
+
+    var playerOptionsContainer = document.createElement("div");
+    playerOptionsContainer.setAttribute("id", "playerOptionsContainer");
+    playerOptionsContainer.classList.add("playerOptionsContainer");
+    bankTab.appendChild(playerOptionsContainer);
+
+    var bankTitle = document.createElement("h2");
+    bankTitle.textContent = "???????";
+    bankTitle.setAttribute("id", "bankTitle");
+    playerOptionsContainer.appendChild(bankTitle);
+
+    var bankInterest = document.createElement("p");
+    bankInterest.textContent = "Interest: ??.??%";
+    bankInterest.setAttribute("id", "bankInterest");
+    playerOptionsContainer.appendChild(bankInterest);
+
+    var bankMembership = document.createElement("p");
+    bankMembership.textContent = "Membership: $?????";
+    bankMembership.setAttribute("id", "bankMembership");
+    playerOptionsContainer.appendChild(bankMembership);
+
+    var selectBankButton = document.createElement("button");
+    selectBankButton.textContent = "Select Bank";
+    selectBankButton.setAttribute("id", "selectBankButton");
+    playerOptionsContainer.appendChild(selectBankButton);
+
+    var bankPlayerTitle = document.createElement("h2");
+    bankPlayerTitle.textContent = "You (Player ?)";
+    bankPlayerTitle.setAttribute("id", "bankPlayerTitle");
+    playerOptionsContainer.appendChild(bankPlayerTitle);
+
+    var handTitle = document.createElement("h3");
+    handTitle.textContent = "Hand";
+    playerOptionsContainer.appendChild(handTitle);
+
+    var moneyTitle = document.createElement("p");
+    moneyTitle.textContent = "Money: $?????";
+    moneyTitle.setAttribute("id", "moneyTitle");
+    playerOptionsContainer.appendChild(moneyTitle);
+
+    var chosenBankTitle = document.createElement("h3");
+    chosenBankTitle.textContent = "Bank";
+    chosenBankTitle.setAttribute("id", "chosenBankTitle");
+    playerOptionsContainer.appendChild(chosenBankTitle);
+
+    var bankMoneyTitle = document.createElement("p");
+    bankMoneyTitle.textContent = "Money: $?????";
+    bankMoneyTitle.setAttribute("id", "bankMoneyTitle");
+    playerOptionsContainer.appendChild(bankMoneyTitle);
+
+    var depositButton = document.createElement("button");
+    depositButton.textContent = "Deposit";
+    depositButton.setAttribute("onClick", "deposit()");
+    playerOptionsContainer.appendChild(depositButton);
+
+    var withdrawButton = document.createElement("button");
+    withdrawButton.textContent = "Withdraw";
+    withdrawButton.setAttribute("onClick", "withdraw()");
+    playerOptionsContainer.appendChild(withdrawButton);
 }
 
 function openCompany(companyID)
@@ -336,7 +485,6 @@ socket.on('invalidInventory', function() {
 
 function sellShare(companyID)
 {
-    var company = getCompanyFromID(companyID);
     socket.emit("sellShare", {
         playerID: playerID,
         companyID: companyID
@@ -360,14 +508,13 @@ function setGameSpeed()
 {
     var speedInput = document.getElementById("speedInput");
     socket.emit("setGameSpeed", {
-        speed: speedInput.textContent
+        speed: speedInput.value
     });
 }
 
 function resetGame()
 {
     socket.emit("resetGame");
-    
 }
 
 socket.on('updateLeaderboard', function(data) {
@@ -378,14 +525,109 @@ socket.on('updateLeaderboard', function(data) {
     }
     leaderBoardArray = data.leaderBoard;
     leaderBoardArray.sort(function(a, b) {return b[1]-a[1]});
+    var leaderBoardPosition = 0;
     leaderBoardArray.forEach(player => {
+        leaderBoardPosition++;
         var playerTab = document.createElement("p");
-        playerTab.textContent = "Player " + player[0] + ": $" + player[1];
+        playerTab.textContent = leaderBoardPosition + ") " + player[0] + ": $" + player[1];
         leaderBoard.appendChild(playerTab);
     }); 
 });
 
+function switchTab(tabID)
+{
+    var gameContainer = document.getElementById("gameContainer");
+    var gameSettings = document.getElementById("gameSettings")
+    var spacerDiv = document.getElementById("spacerDiv");
+    var stockTab = document.getElementById("stockTab");
+    var bankTab = document.getElementById("bankTab");
+    if (tabID == 0)
+    {
+        gameContainer.appendChild(stockTab);
+        gameContainer.appendChild(gameSettings);
+        gameContainer.appendChild(bankTab);
+        gameContainer.appendChild(spacerDiv);
+    }
+    else if (tabID == 1)
+    {
+        gameContainer.appendChild(bankTab);
+        gameContainer.appendChild(gameSettings);
+        gameContainer.appendChild(stockTab);
+        gameContainer.appendChild(spacerDiv);
+    }
+    else if (tabID == 2)
+    {
+
+    }
+}
 //company[ID, TAG, VALUE, SHARES, DIVIDENDS, PREVVALUES[], CEO]
+//[ID, name, interest, membership]
+function openBank(bankID)
+{
+    document.getElementById("bankTitle").textContent = banks[bankID][1];
+    document.getElementById("bankInterest").textContent = "Interest: " + banks[bankID][2] + "%";
+    bankMembership
+    document.getElementById("bankMembership").textContent = "Membership: $" + banks[bankID][3];
+    document.getElementById("selectBankButton").setAttribute("onClick", "setBank(" + bankID + ")");
+}
+
+function setBank(bankID)
+{
+    if (bankID == selectedBank)
+    {
+        alert("This is your current bank!");
+        return;
+    }
+    if (money < banks[bankID][3])
+    {
+        alert("Membership too expensive!");
+        return;
+    }
+
+    socket.emit("setBank", {
+        playerID: playerID,
+        bankID: bankID
+    });
+
+    selectedBank = bankID;
+
+    document.getElementById("chosenBankTitle").textContent = banks[bankID][1]
+}
+
+function setName()
+{
+    var name = document.getElementById("nameInput").value;
+    socket.emit("setName", {
+        playerID: playerID,
+        name: name
+    });
+}
+
+function deposit()
+{
+    var amount = Number(prompt("How much would you like to deposit?"));
+    if (amount > money)
+    {
+        alert("Not enough money in hand!");
+    }
+    socket.emit("deposit", {
+        playerID: playerID,
+        amount: amount
+    });
+}
+
+function withdraw()
+{
+    var amount = Number(prompt("How much would you like to withdraw?"));
+    if (amount > bankMoney)
+    {
+        alert("Not enough money in bank!");
+    }
+    socket.emit("withdraw", {
+        playerID: playerID,
+        amount: amount
+    });
+}
 
 function drawGraph(companyID)
 {

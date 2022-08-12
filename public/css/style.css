@@ -6,6 +6,8 @@ html {
 
 div.container {
     display: grid;
+    width: 100%;
+    overflow: hidden;
 }
 
 div.gameContainer {
@@ -19,6 +21,20 @@ div.gameContainer {
 div.stockTab {
     display: grid;
     grid-template-columns: 1.5fr 3fr 1.5fr;
+    grid-column-gap: 0px;
+    height: 500px;
+}
+
+div.bankTab {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-column-gap: 0px;
+    height: 500px;
+}
+
+div.banksContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     grid-column-gap: 0px;
     height: 500px;
 }

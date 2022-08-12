@@ -25,21 +25,30 @@ var businessOwners = ["Mr. Red", "Prof. Orange", "Lady Yellow", "Dr. Green", "Ch
 
 var gameSpeed = 2;
 
+
 var stocks = [];
 var stockID = 0;
 addStock("SEFFCO", 50.00, 10, 4, "Mme. Purple");
 addStock("DTVOGS", 50.00, 20, 2, "Prof. Orange");
 addStock("JNVPLS", 50.00, 25, 0, "Cheif Blue");
 
+//[ID, name, interest, membership]
+var banks = [[0, "Bank of Sefftopia", 0.0, 0], [1, "Seff Bank", 0.5, 5000], [2, "Bank of Banks", 1, 10000], [3, "Bank of the Wealthy", 2, 1000000]]
+
 io.on('connection', (socket) => {
     playersOnline++;
     console.log("Player joined")
     var player = [];
     player.push(playerID);
+    var localPlayerID = playerID;
     player.push(socket);
     player.push(200);
     var ownedShares = [];
     player.push(ownedShares);
+    player.push(0);
+    player.push(0);
+    player.push("Player " + playerID);
+    //[ID, socket, money, ownedShares[], bankID, bankMoney, nickname]
     players.push(player);
     socket.emit("setPlayerID", {
         id: playerID
@@ -53,11 +62,15 @@ io.on('connection', (socket) => {
     socket.emit("setDay", {
         day: day
     })
+    socket.emit("setBankDetails", {
+        banks: banks
+    });
 
     socket.on('getMoney', (data) => {
         var player = getPlayerFromID(data.id);
         socket.emit("setClientMoney", {
-            money: player[2].toFixed(2)
+            money: player[2].toFixed(2),
+            bankMoney: player[5].toFixed(2)
         });
     });
 
@@ -65,12 +78,28 @@ io.on('connection', (socket) => {
         console.log('Player left');
         for (var i; i < players.length; i++)
         {
-            if (socket == players[i][0])
+            if (localPlayerID == players[i][0])
             {
                 players.splice(i, 1)
             }
         }
         playersOnline--;
+    });
+
+    socket.on('setBank', (data) => {
+        var bank = getBankFromID(data.bankID);
+        var player = getPlayerFromID(data.playerID);
+
+        player[2] -= bank[3];
+        player[4] = data.bankID;
+    });
+
+    socket.on('setName', (data) => {
+        player = getPlayerFromID(data.playerID);
+        player[6] = data.name;
+        socket.emit('setClientName', {
+            name: data.name
+        })
     });
 
     socket.on('buyShare', (data) => {
@@ -88,7 +117,7 @@ io.on('connection', (socket) => {
             return;
         }
 
-        player[2] = player[2] - company[2];
+        player[2] -= company[2];
         company[3]--;
         if (player[3].length == 0)
         {
@@ -105,7 +134,7 @@ io.on('connection', (socket) => {
             {
                 if (player[3][i][0] == company[0])
                 {
-                    player[3][i][1] = player[3][i][1] + 1;
+                    player[3][i][1] += 1;
                     added = true;
                 }
             }
@@ -134,7 +163,7 @@ io.on('connection', (socket) => {
         {
             if (player[3][i][0] == company[0])
             {
-                    player[3][i][1] = player[3][i][1] - 1;
+                    player[3][i][1] -= 1;
             }
         }
         console.log("Player " + player[0] + " sold a share of " + company[1] + " (now " + company[3] + " available)");
@@ -159,6 +188,18 @@ io.on('connection', (socket) => {
     socket.on('resetGame', () => {
         resetGame();
     });
+
+    socket.on('deposit', (data) => {
+        player = getPlayerFromID(data.playerID);
+        player[2] -= data.amount;
+        player[5] += data.amount;
+    });
+
+    socket.on('withdraw', (data) => {
+        player = getPlayerFromID(data.playerID);
+        player[2] += data.amount;
+        player[5] -= data.amount;
+    });
 });
 
 server.listen(port, () => {
@@ -167,7 +208,7 @@ server.listen(port, () => {
 
 function addStock(tag, value, shares, dividends, ceo)
 {
-    //company = [stockID, tag, value, shares, dividends, prevValues[], ]
+    //company = [stockID, tag, value, shares, dividends, prevValues[], CEO]
     var company = [];
     company.push(stockID);
     stockID++;
@@ -190,11 +231,12 @@ function nextDay()
         resetGame();
         return;
     }
+    //ADD ALL OF THE DAYS CHANGES HERE.
     updateLeaderboard();
     checkNewCompany();
     earnDividends();
+    if (day % 7 == 0) {earnInterest();}
     updateStocks();
-    //ADD ALL OF THE DAYS CHANGES HERE.
     refreshStocks()
     io.emit("setDay", {
         day: day
@@ -231,6 +273,19 @@ function getPlayerFromID(id)
         }
     }
     return players[arrayPosition];
+}
+
+function getBankFromID(id)
+{
+    var arrayPosition;
+    for (var i = 0; i < banks.length; i++)
+    {
+        if (banks[i][0] == id)
+        {
+            arrayPosition = i;
+        }
+    }
+    return banks[arrayPosition];
 }
 
 function refreshStocks()
@@ -273,6 +328,9 @@ function updateStocks()
             if (company[2] <= 0)
             {
                 console.log(stocks[i][1] + " has gone bankrupt");
+                io.emit("bankrupt", {
+                    companyID: company[0]
+                });
                 stocks.splice(i, 1);
                 for (var j = 0; j < players.length; j++)
                 {
@@ -305,9 +363,20 @@ function earnDividends()
                 var num = (company[2] * (0.01*company[4]))*ownedStock[1]
                 num.toFixed(2);
                 player[2]+= num;
-                console.log(company[0] + " has given dividends to player " + player[0] + " and earnt them $" + num);
+                console.log(company[1] + " has given dividends to player " + player[0] + " and earnt them $" + num);
             }
         });
+    });
+}
+
+function earnInterest()
+{
+    players.forEach(player => {
+        var bank = getBankFromID(player[4]);
+        var num = player[5] * (0.01*bank[2]);
+        num.toFixed(2);
+        player[5] += num;
+        console.log(bank[1] + " has given given player " + player[0] + " interest and earnt them $" + num);
     });
 }
 
@@ -322,10 +391,13 @@ function resetGame()
     players.forEach(player => {
         player[3].splice(0);
         player[2] = 200;
+        player[4] = 0
+        player[5] = 0
     });
 
     day = 1;
     refreshStocks();
+    io.emit('resetSelections');
 }
 
 function checkNewCompany()
@@ -353,7 +425,7 @@ function updateLeaderboard()
 {
     leaderBoard = [];
     players.forEach(player => {
-        var playerStat = [player[0], player[2].toFixed(2)];
+        var playerStat = [player[6], (player[2]+player[5]).toFixed(2)];
         leaderBoard.push(playerStat);
     });
     io.emit("updateLeaderboard", {
